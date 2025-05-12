@@ -48,14 +48,14 @@ type AdminConfig struct {
 
 // EmailConfig holds email configuration
 type EmailConfig struct {
-	VerificationURL  string
-	From             string
-	Host             string
-	Port             int
-	Username         string
-	Password         string
-	Secure           bool
-	VerificationTTL  int
+	VerificationURL string
+	From            string
+	Host            string
+	Port            int
+	Username        string
+	Password        string
+	Secure          bool
+	VerificationTTL int
 }
 
 // ServerConfig holds server configuration
@@ -70,19 +70,19 @@ func LoadConfig() (*Config, error) {
 
 	// Parse DB port
 	dbPort, _ := strconv.Atoi(getEnv("DB_PORT", "5432"))
-	
+
 	// Parse JWT expiry
 	jwtExpiry, _ := time.ParseDuration(getEnv("JWT_EXPIRY", "24h"))
-	
+
 	// Parse email port
 	emailPort, _ := strconv.Atoi(getEnv("EMAIL_PORT", "587"))
-	
+
 	// Parse email secure
 	emailSecure, _ := strconv.ParseBool(getEnv("EMAIL_SECURE", "true"))
-	
+
 	// Parse verification token TTL
 	verificationTTL, _ := strconv.Atoi(getEnv("VERIFICATION_TOKEN_TTL", "5"))
-	
+
 	// Parse server port
 	serverPort, _ := strconv.Atoi(getEnv("SERVER_PORT", "8080"))
 
