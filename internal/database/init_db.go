@@ -16,9 +16,13 @@ var DB *sql.DB
 
 func ConnDB(db_env config.DatabaseConfig) {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		db_env.Host, strconv.Itoa(db_env.Port), db_env.User, db_env.Password, db_env.Name, db_env.SSLmode)
-
-	fmt.Println(db_env)
+		db_env.Host,
+		strconv.Itoa(db_env.Port),
+		db_env.User,
+		db_env.Password,
+		db_env.Name,
+		db_env.SSLmode,
+	)
 
 	var err error
 	DB, err = sql.Open("postgres", connStr)
@@ -30,21 +34,20 @@ func ConnDB(db_env config.DatabaseConfig) {
 	if err != nil {
 		log.Fatal("DB ping failed:", err)
 	}
+
 	fmt.Println("Connected to the database.")
 
-	// sqlFilePath := "/app/migrations/000001_init_schema/up.sql"
 	sqlFilePath := "/home/zihad/coding/Developer-Assignment/migrations/000001_init_schema/up.sql"
 
 	sqlBytes, err := os.ReadFile(sqlFilePath)
 	if err != nil {
-		log.Println("failed to read sqlFilePath")
+		log.Fatalf("Failed to read migration file: %v", err)
 	}
 
 	_, err = DB.Exec(string(sqlBytes))
-
 	if err != nil {
-		log.Println("DB execute error")
-		return
+		log.Fatalf("DB execute error: %v", err)
 	}
-	log.Println("Hurray, database created..")
+
+	log.Println("Hurray, database schema created successfully.")
 }
