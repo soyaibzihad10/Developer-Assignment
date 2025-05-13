@@ -31,11 +31,6 @@ func main() {
 
 	r := routes.SetupRoutes()
 
-	// Set a simple test route
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to AffPilot Auth Service (via Gorilla Mux)"))
-	}).Methods("GET")
-
 	// Start server
 	port := ":8080"
 	log.Println("Server is running on http://localhost" + port)
