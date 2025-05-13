@@ -15,6 +15,7 @@ import (
 var DB *sql.DB
 
 func ConnDB(db_env config.DatabaseConfig) {
+	
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		db_env.Host,
 		strconv.Itoa(db_env.Port),
