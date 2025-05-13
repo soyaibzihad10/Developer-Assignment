@@ -31,6 +31,7 @@ type DatabaseConfig struct {
 	User     string
 	Password string
 	Name     string
+	SSLmode  string
 }
 
 // JWTConfig holds JWT configuration
@@ -95,8 +96,9 @@ func LoadConfig() (*Config, error) {
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     dbPort,
 			User:     getEnv("DB_USER", "postgres"),
-			Password: getEnv("DB_PASSWORD", "postgres"),
+			Password: getEnv("DB_PASSWORD", "affpilot"),
 			Name:     getEnv("DB_NAME", "affpilot_auth"),
+			SSLmode:  getEnv("SSLmode", "affpilot_auth"),
 		},
 		JWT: JWTConfig{
 			Secret: getEnv("JWT_SECRET", "your-secret-key-here"),
