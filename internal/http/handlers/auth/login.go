@@ -54,6 +54,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	// Successful response
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")

@@ -17,5 +17,6 @@ func SetupRoutes() *mux.Router {
 	authRoutes.HandleFunc("/register", auth.RegisterHandler).Methods("POST")
 	authRoutes.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 	authRoutes.HandleFunc("/verify", auth.VerifyEmailHandler).Methods("GET")
+	authRoutes.HandleFunc("/resend-verification", auth.ResendVerificationHandler).Methods("POST")
 	return r
 }

@@ -12,13 +12,19 @@ import (
 
 var ErrUserNotFound = errors.New("user not found")
 
-func generateVerificationToken() (string, error) {
+func GenerateVerificationToken() (string, error) {
 	token := make([]byte, 16) // 16-byte token
 	_, err := rand.Read(token)
 	if err != nil {
 		return "", err
 	}
 	return hex.EncodeToString(token), nil
+}
+
+func UpdateUserVerificationToken(db *sql.DB, user *models.User) error {
+    query := "UPDATE users SET verification_token = $1, token_expiry = $2 WHERE id = $3"
+    _, err := db.Exec(query, user.VerificationToken, user.TokenExpiry, user.ID)
+    return err
 }
 
 func CreateUser(db *sql.DB, user *models.User) error {
@@ -31,7 +37,7 @@ func CreateUser(db *sql.DB, user *models.User) error {
 	now := time.Now()
 
 	// Generate verification token
-	token, err := generateVerificationToken()
+	token, err := GenerateVerificationToken()
 	if err != nil {
 		return err
 	}
