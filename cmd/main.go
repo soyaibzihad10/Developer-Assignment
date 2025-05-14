@@ -23,11 +23,14 @@ func init() {
 	database.ConnDB(cnf.Database)
 
 	// add system admin if does not exist
+	
 }
 
 func main() {
 	fmt.Println("AffPilot Auth Service starting...")
 	log.Println("Server initialized")
+
+	defer database.DB.Close()
 
 	r := routes.SetupRoutes()
 

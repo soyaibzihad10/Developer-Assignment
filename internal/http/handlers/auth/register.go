@@ -46,12 +46,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not create user", http.StatusInternalServerError)
 		return
 	}
+	
 
 	// Successful response
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "User registered successfully",
+		"status": "success",
+		"status_code": 200,
 		"user": map[string]interface{}{
 			"id":       user.ID,
 			"email":    user.Email,
