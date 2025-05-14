@@ -16,5 +16,6 @@ func SetupRoutes() *mux.Router {
 	authRoutes := r.PathPrefix("/api/v1/auth").Subrouter()
 	authRoutes.HandleFunc("/register", auth.RegisterHandler).Methods("POST")
 	authRoutes.HandleFunc("/login", auth.LoginHandler).Methods("POST")
+	authRoutes.HandleFunc("/verify", auth.VerifyEmailHandler).Methods("GET")
 	return r
 }

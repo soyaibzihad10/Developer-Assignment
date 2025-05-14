@@ -2,9 +2,12 @@ package auth
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/soyaibzihad10/Developer-Assignment/internal/database"
+	"github.com/soyaibzihad10/Developer-Assignment/internal/email"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -43,16 +46,26 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Call CreateUser to insert into DB
 	err = database.CreateUser(database.DB, user)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value") {
+			http.Error(w, "Email or username already exists", http.StatusConflict)
+			return
+		}
+		log.Printf("Error creating user: %v", err)
 		http.Error(w, "Could not create user", http.StatusInternalServerError)
 		return
 	}
-	
+
+	err = email.SendVerificationEmail(user.Email, user.VerificationToken)
+	if err != nil {
+		http.Error(w, "Could not send verification email", http.StatusInternalServerError)
+		return
+	}
 
 	// Successful response
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status": "success",
+		"status":      "success",
 		"status_code": 200,
 		"user": map[string]interface{}{
 			"id":       user.ID,

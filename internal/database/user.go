@@ -1,7 +1,9 @@
 package database
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -10,14 +12,29 @@ import (
 
 var ErrUserNotFound = errors.New("user not found")
 
+func generateVerificationToken() (string, error) {
+	token := make([]byte, 16) // 16-byte token
+	_, err := rand.Read(token)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(token), nil
+}
+
 func CreateUser(db *sql.DB, user *models.User) error {
 	query := `INSERT INTO users (
-		username, email, first_name, last_name, password_hash,
-		email_verified, user_type, active, created_at, updated_at
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-	RETURNING id`
+        username, email, first_name, last_name, password_hash,
+        email_verified, user_type, active, verification_token, token_expiry, created_at, updated_at
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    RETURNING id`
 
 	now := time.Now()
+
+	// Generate verification token
+	token, err := generateVerificationToken()
+	if err != nil {
+		return err
+	}
 
 	// Default/auto fields set
 	user.CreatedAt = now
@@ -25,8 +42,10 @@ func CreateUser(db *sql.DB, user *models.User) error {
 	user.EmailVerified = false // new users are not verified by default
 	user.UserType = "user"     // default role
 	user.Active = true         // default active user
+	user.VerificationToken = token
+	user.TokenExpiry = now.Add(24 * time.Hour) // Token valid for 24 hours
 
-	err := db.QueryRow(query,
+	err = db.QueryRow(query,
 		user.Username,
 		user.Email,
 		user.FirstName,
@@ -35,6 +54,8 @@ func CreateUser(db *sql.DB, user *models.User) error {
 		user.EmailVerified,
 		user.UserType,
 		user.Active,
+		user.VerificationToken,
+		user.TokenExpiry,
 		user.CreatedAt,
 		user.UpdatedAt,
 	).Scan(&user.ID)
