@@ -12,6 +12,43 @@ import (
 
 var ErrUserNotFound = errors.New("user not found")
 
+// password reset related
+func GenerateRandomToken() string {
+    b := make([]byte, 32)
+    rand.Read(b)
+    return hex.EncodeToString(b)
+}
+
+func SavePasswordResetToken(db *sql.DB, userID string, token string, expiry time.Time) error {
+    query := `UPDATE users SET 
+        reset_token = $1,
+        reset_token_expiry = $2
+        WHERE id = $3`
+    _, err := db.Exec(query, token, expiry, userID)
+    return err
+}
+
+func ValidatePasswordResetToken(db *sql.DB, token string) (string, error) {
+    var userID string
+    query := `SELECT id FROM users 
+        WHERE reset_token = $1 
+        AND reset_token_expiry > NOW()`
+    err := db.QueryRow(query, token).Scan(&userID)
+    return userID, err
+}
+
+func UpdateUserPassword(db *sql.DB, userID string, hashedPassword string) error {
+    query := `UPDATE users SET 
+        password_hash = $1,
+        reset_token = NULL,
+        reset_token_expiry = NULL
+        WHERE id = $2`
+    _, err := db.Exec(query, hashedPassword, userID)
+    return err
+}
+
+
+// varification related
 func GenerateVerificationToken() (string, error) {
 	token := make([]byte, 16) // 16-byte token
 	_, err := rand.Read(token)
@@ -27,6 +64,8 @@ func UpdateUserVerificationToken(db *sql.DB, user *models.User) error {
     return err
 }
 
+
+// create user related
 func CreateUser(db *sql.DB, user *models.User) error {
 	query := `INSERT INTO users (
         username, email, first_name, last_name, password_hash,

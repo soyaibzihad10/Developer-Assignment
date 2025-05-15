@@ -20,10 +20,14 @@ func init() {
 	}
 
 	// connect to database
-	database.ConnDB(cnf.Database)
+	if err := database.ConnDB(cnf.Database); err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
 
-	// add system admin if does not exist
-	
+	// run migrations
+	if err := database.RunMigrations(); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
 }
 
 func main() {

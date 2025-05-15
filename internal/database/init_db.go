@@ -4,17 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 
 	_ "github.com/lib/pq"
-
 	"github.com/soyaibzihad10/Developer-Assignment/internal/config"
 )
 
 var DB *sql.DB
 
-func ConnDB(db_env config.DatabaseConfig) {
+// ConnDB initializes the database connection
+func ConnDB(db_env config.DatabaseConfig) error {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		db_env.Host,
 		strconv.Itoa(db_env.Port),
@@ -27,27 +26,13 @@ func ConnDB(db_env config.DatabaseConfig) {
 	var err error
 	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal("Cannot connect to DB:", err)
+		return fmt.Errorf("cannot connect to DB: %v", err)
 	}
 
-	err = DB.Ping()
-	if err != nil {
-		log.Fatal("DB ping failed:", err)
+	if err = DB.Ping(); err != nil {
+		return fmt.Errorf("DB ping failed: %v", err)
 	}
 
-	fmt.Println("Connected to the database.")
-
-	sqlFilePath := "/home/zihad/coding/Developer-Assignment/migrations/000001_init_schema/up.sql"
-
-	sqlBytes, err := os.ReadFile(sqlFilePath)
-	if err != nil {
-		log.Fatalf("Failed to read migration file: %v", err)
-	}
-
-	_, err = DB.Exec(string(sqlBytes))
-	if err != nil {
-		log.Fatalf("DB execute error: %v", err)
-	}
-
-	log.Println("Hurray, database schema created successfully.")
+	log.Println("Connected to the database.")
+	return nil
 }
