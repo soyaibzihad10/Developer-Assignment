@@ -108,6 +108,28 @@ func CreateUser(db *sql.DB, user *models.User) error {
 	return err
 }
 
+func GetUserByID(db *sql.DB, id string) (*models.User, error) {
+    user := &models.User{}
+    err := db.QueryRow(`
+        SELECT id, username, email, first_name, last_name, 
+               user_type, email_verified, active, created_at, updated_at
+        FROM users 
+        WHERE id = $1 AND deletion_requested = false
+    `, id).Scan(
+        &user.ID, &user.Username, &user.Email, &user.FirstName, &user.LastName,
+        &user.UserType, &user.EmailVerified, &user.Active, &user.CreatedAt, &user.UpdatedAt,
+    )
+
+    if err == sql.ErrNoRows {
+        return nil, ErrNotFound
+    }
+    if err != nil {
+        return nil, err
+    }
+
+    return user, nil
+}
+
 func GetUserByEmail(db *sql.DB, email string) (*models.User, error) {
 	user := &models.User{}
 	query := "SELECT id, username, first_name, last_name, email, password_hash, email_verified, user_type, active, created_at, updated_at FROM users WHERE email = $1"

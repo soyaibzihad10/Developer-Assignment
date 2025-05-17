@@ -4,7 +4,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/http/handlers"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/http/handlers/auth"
+	"github.com/soyaibzihad10/Developer-Assignment/internal/http/handlers/permissions"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/http/handlers/roles"
+	"github.com/soyaibzihad10/Developer-Assignment/internal/http/handlers/users"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/http/middleware"
 )
 
@@ -37,6 +39,16 @@ func SetupRoutes() *mux.Router {
 	roleRoutes.HandleFunc("", roles.CreateRoleHandler).Methods("POST")
 	roleRoutes.HandleFunc("/{role_id}", roles.UpdateRoleHandler).Methods("PUT")
 	roleRoutes.HandleFunc("/{role_id}", roles.DeleteRoleHandler).Methods("DELETE")
+
+	// Permission management routes (admin only)
+	permissionRoutes := protectedRoutes.PathPrefix("/permissions").Subrouter()
+	permissionRoutes.Use(middleware.RequireAdmin)
+	permissionRoutes.HandleFunc("", permissions.ListPermissionsHandler).Methods("GET")
+	permissionRoutes.HandleFunc("/{permission_id}", permissions.GetPermissionHandler).Methods("GET")
+
+	// User profile and permissions (authenticated only)
+	protectedRoutes.HandleFunc("/me", users.GetProfileHandler).Methods("GET")
+	protectedRoutes.HandleFunc("/me/permissions", permissions.GetUserPermissionsHandler).Methods("GET")
 
 	return r
 }
