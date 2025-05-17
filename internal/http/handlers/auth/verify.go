@@ -9,6 +9,8 @@ import (
 )
 
 func VerifyEmailHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	token := r.URL.Query().Get("token")
 	if token == "" {
 		http.Error(w, "Token is required", http.StatusBadRequest)

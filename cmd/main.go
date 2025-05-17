@@ -24,6 +24,9 @@ func init() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
+	// check if system admin exists
+	database.CreateSystemAdminIfNotExists(cnf.Admin)
+
 	// run migrations
 	if err := database.RunMigrations(); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
