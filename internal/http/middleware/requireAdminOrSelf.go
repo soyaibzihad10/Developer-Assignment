@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -8,14 +9,15 @@ import (
 
 func RequireAdminOrSelf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userType := r.Context().Value(UserTypeKey).(string)
-		userID := r.Context().Value(UserIDKey).(string)
+		userType := r.Context().Value(UserTypeKey)
+		userID := r.Context().Value(UserIDKey)
 
-		// Check if request is for a specific user
+		log.Println("Middleware Check -- userType:", userType, "userID:", userID)
+
 		vars := mux.Vars(r)
 		requestedUserID := vars["user_id"]
+		log.Println("Requested user ID:", requestedUserID)
 
-		// Allow if admin/system_admin OR if user accessing their own data
 		isAdmin := userType == "admin" || userType == "system_admin"
 		isSelfAccess := requestedUserID != "" && requestedUserID == userID
 

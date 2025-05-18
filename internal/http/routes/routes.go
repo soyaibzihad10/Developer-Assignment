@@ -50,18 +50,40 @@ func SetupRoutes() *mux.Router {
 	protectedRoutes.HandleFunc("/me", users.GetProfileHandler).Methods("GET")
 	protectedRoutes.HandleFunc("/me/permissions", permissions.GetUserPermissionsHandler).Methods("GET")
 
-	// user management routes
+	// User management routes
 	userRoutes := protectedRoutes.PathPrefix("/users").Subrouter()
 
-	// List users requires admin
 	listRoute := userRoutes.PathPrefix("").Subrouter()
 	listRoute.Use(middleware.RequireAdmin)
 	listRoute.HandleFunc("", users.ListUsersHandler).Methods("GET")
 
-	// Get user details requires admin or self
+	// Get/Update/Delete user details - requires admin or self
 	detailRoute := userRoutes.PathPrefix("").Subrouter()
-	detailRoute.Use(middleware.RequireAdminOrSelf)
+	detailRoute.Use(middleware.RequireAdminModeratorSelf)
 	detailRoute.HandleFunc("/{user_id}", users.GetUserHandler).Methods("GET")
+	detailRoute.HandleFunc("/{user_id}", users.DeleteUserHandler).Methods("DELETE")
+
+	// Self-service routes (request deletion)
+	selfRoute := userRoutes.PathPrefix("").Subrouter()
+	selfRoute.Use(middleware.RequireAdminOrSelf)
+	selfRoute.HandleFunc("/{user_id}", users.UpdateUserHandler).Methods("PUT")
+	selfRoute.HandleFunc("/{user_id}/request-deletion", users.RequestDeletionHandler).Methods("POST")
+
+	// Role management routes (admin only)
+	roleRoute := userRoutes.PathPrefix("").Subrouter()
+	roleRoute.Use(middleware.RequireAdmin)
+	roleRoute.HandleFunc("/{user_id}/role", users.ChangeRoleHandler).Methods("POST")
+
+	// System admin only routes
+	sysAdminRoute := userRoutes.PathPrefix("").Subrouter()
+	sysAdminRoute.Use(middleware.RequireSystemAdmin)
+	sysAdminRoute.HandleFunc("/{user_id}/promote/admin", users.PromoteToAdminHandler).Methods("POST")
+
+	// Admin+ routes
+	adminRoute := userRoutes.PathPrefix("").Subrouter()
+	adminRoute.Use(middleware.RequireAdmin)
+	adminRoute.HandleFunc("/{user_id}/promote/moderator", users.PromoteToModeratorHandler).Methods("POST")
+	adminRoute.HandleFunc("/{user_id}/demote", users.DemoteUserHandler).Methods("POST")
 
 	return r
 }
