@@ -50,5 +50,18 @@ func SetupRoutes() *mux.Router {
 	protectedRoutes.HandleFunc("/me", users.GetProfileHandler).Methods("GET")
 	protectedRoutes.HandleFunc("/me/permissions", permissions.GetUserPermissionsHandler).Methods("GET")
 
+	// user management routes
+	userRoutes := protectedRoutes.PathPrefix("/users").Subrouter()
+
+	// List users requires admin
+	listRoute := userRoutes.PathPrefix("").Subrouter()
+	listRoute.Use(middleware.RequireAdmin)
+	listRoute.HandleFunc("", users.ListUsersHandler).Methods("GET")
+
+	// Get user details requires admin or self
+	detailRoute := userRoutes.PathPrefix("").Subrouter()
+	detailRoute.Use(middleware.RequireAdminOrSelf)
+	detailRoute.HandleFunc("/{user_id}", users.GetUserHandler).Methods("GET")
+
 	return r
 }
