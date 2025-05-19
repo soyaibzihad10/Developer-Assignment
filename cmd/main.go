@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -34,14 +33,10 @@ func init() {
 }
 
 func main() {
-	fmt.Println("AffPilot Auth Service starting...")
 	log.Println("Server initialized")
-
 	defer database.DB.Close()
 
 	r := routes.SetupRoutes()
-
-	// Start server
 	port := ":8080"
 	log.Println("Server is running on http://localhost" + port)
 	log.Fatal(http.ListenAndServe(port, r))

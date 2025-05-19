@@ -1,10 +1,10 @@
-package handlers
+package health
 
 import (
-    "fmt"
-    "net/http"
+	"fmt"
+	"net/http"
 )
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprint(w, "pong")
+	fmt.Fprint(w, "pong")
 }
