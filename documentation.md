@@ -2,26 +2,98 @@
 
 ## Table of Contents
 1. [Overview](#overview)
-2. [Features](#features)
-3. [Technology Stack](#technology-stack)
-4. [Project Structure](#project-structure)
-5. [Database Schema](#database-schema)
-6. [API Documentation](#api-documentation)
-7. [Setup and Installation](#setup-and-installation)
+2. [Setup and Installation](#setup-and-installation)
    - [Prerequisites](#prerequisites)
    - [Local Setup](#local-setup)
    - [Docker Setup](#docker-setup)
-8. [Environment Variables](#environment-variables)
+3. [Environment Variables](#environment-variables)
+4. [Features](#features)
+5. [Technology Stack](#technology-stack)
+6. [Project Structure](#project-structure)
+5. [Database Schema](#database-schema)
+6. [API Documentation](#api-documentation)
+
 9. [User Types and Permissions](#user-types-and-permissions)
 10. [Authentication Flow](#authentication-flow)
 11. [Email Verification Process](#email-verification-process)
 12. [Account Deletion Workflow](#account-deletion-workflow)
-13. [Testing](#testing)
-14. [Troubleshooting](#troubleshooting)
+13. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
 AffPilot Auth Service is a robust authentication and authorization service for managing user identities, issuing JWT tokens, and implementing role-based access controls. The service provides secure user authentication, comprehensive identity management, and role-based authorization for applications.
+
+### Local Setup
+
+1. Clone the repository
+```bash
+git clone https://github.com/soyaibzihad10/affpilot-auth-service.git
+cd affpilot-auth-service
+```
+
+2. Configure environment variables
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+3. Run the application
+```bash
+go run ./cmd/main.go
+```
+
+4. Apply database migrations
+```bash
+# If you're using go-migrate or similar tool
+migrate -database "postgres://user:password@localhost:5432/affpilot_auth?sslmode=disable" -path migrations up
+```
+
+### Docker Setup
+
+1. Clone the repository
+```bash
+git clone https://github.com/soyaibzihad10/affpilot-auth-service.git
+cd affpilot-auth-service
+```
+
+2. Start the application with Docker Compose
+```bash
+docker-compose up --build
+```
+
+This command will:
+- Build the application Docker image
+- Start the PostgreSQL database
+- Apply the migrations
+- Start the application on the configured port (default: 8080)
+
+## Environment Variables
+
+| Variable                | Description                                  | Example Value                       |
+|-------------------------|----------------------------------------------|-------------------------------------|
+| APP_ENV                 | Application environment                      | development                         |
+| SERVER_PORT             | HTTP server port                             | 8080                                |
+| LOG_LEVEL               | Logging level                                | debug                               |
+| DB_HOST                 | PostgreSQL host                              | localhost                           |
+| DB_PORT                 | PostgreSQL port                              | 5432                                |
+| DB_USER                 | PostgreSQL username                          | postgres                            |
+| DB_PASSWORD             | PostgreSQL password                          | postgres                            |
+| DB_NAME                 | PostgreSQL database name                     | affpilot_auth                       |
+| JWT_SECRET              | Secret key for signing JWT tokens            | your-secret-key-here                |
+| JWT_EXPIRY              | JWT token validity duration                  | 24h                                 |
+| SYSTEM_ADMIN_USERNAME   | Initial system admin username                | admin                               |
+| SYSTEM_ADMIN_PASSWORD   | Initial system admin password                | adminpassword                       |
+| SYSTEM_ADMIN_EMAIL      | Initial system admin email                   | admin@example.com                   |
+| PASSWORD_SALT           | Salt for password hashing                    | your-password-salt-here             |
+| EMAIL_VERIFICATION_URL  | Base URL for email verification links        | http://localhost:8080/api/v1/auth/verify |
+| EMAIL_FROM              | Sender email address for system emails       | no-reply@example.com                |
+| EMAIL_HOST              | SMTP server host                             | smtp.example.com                    |
+| EMAIL_PORT              | SMTP server port                             | 587                                 |
+| EMAIL_USERNAME          | SMTP server username                         | smtp-user                           |
+| EMAIL_PASSWORD          | SMTP server password                         | smtp-password                       |
+| EMAIL_SECURE            | Use TLS for SMTP (true/false)                | true                                |
+| VERIFICATION_TOKEN_TTL  | Verification token lifetime in minutes       | 5                                   |
+
 
 ## Features
 
@@ -215,76 +287,6 @@ The service uses PostgreSQL as its database with the following schema:
 - PostgreSQL 13+
 - Git
 
-### Local Setup
-
-1. Clone the repository
-```bash
-git clone https://github.com/soyaibzihad10/affpilot-auth-service.git
-cd affpilot-auth-service
-```
-
-2. Configure environment variables
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-3. Run the application
-```bash
-go run ./cmd/main.go
-```
-
-4. Apply database migrations
-```bash
-# If you're using go-migrate or similar tool
-migrate -database "postgres://user:password@localhost:5432/affpilot_auth?sslmode=disable" -path migrations up
-```
-
-### Docker Setup
-
-1. Clone the repository
-```bash
-git clone https://github.com/soyaibzihad10/affpilot-auth-service.git
-cd affpilot-auth-service
-```
-
-2. Start the application with Docker Compose
-```bash
-docker-compose up --build
-```
-
-This command will:
-- Build the application Docker image
-- Start the PostgreSQL database
-- Apply the migrations
-- Start the application on the configured port (default: 8080)
-
-## Environment Variables
-
-| Variable                | Description                                  | Example Value                       |
-|-------------------------|----------------------------------------------|-------------------------------------|
-| APP_ENV                 | Application environment                      | development                         |
-| SERVER_PORT             | HTTP server port                             | 8080                                |
-| LOG_LEVEL               | Logging level                                | debug                               |
-| DB_HOST                 | PostgreSQL host                              | localhost                           |
-| DB_PORT                 | PostgreSQL port                              | 5432                                |
-| DB_USER                 | PostgreSQL username                          | postgres                            |
-| DB_PASSWORD             | PostgreSQL password                          | postgres                            |
-| DB_NAME                 | PostgreSQL database name                     | affpilot_auth                       |
-| JWT_SECRET              | Secret key for signing JWT tokens            | your-secret-key-here                |
-| JWT_EXPIRY              | JWT token validity duration                  | 24h                                 |
-| SYSTEM_ADMIN_USERNAME   | Initial system admin username                | admin                               |
-| SYSTEM_ADMIN_PASSWORD   | Initial system admin password                | adminpassword                       |
-| SYSTEM_ADMIN_EMAIL      | Initial system admin email                   | admin@example.com                   |
-| PASSWORD_SALT           | Salt for password hashing                    | your-password-salt-here             |
-| EMAIL_VERIFICATION_URL  | Base URL for email verification links        | http://localhost:8080/api/v1/auth/verify |
-| EMAIL_FROM              | Sender email address for system emails       | no-reply@example.com                |
-| EMAIL_HOST              | SMTP server host                             | smtp.example.com                    |
-| EMAIL_PORT              | SMTP server port                             | 587                                 |
-| EMAIL_USERNAME          | SMTP server username                         | smtp-user                           |
-| EMAIL_PASSWORD          | SMTP server password                         | smtp-password                       |
-| EMAIL_SECURE            | Use TLS for SMTP (true/false)                | true                                |
-| VERIFICATION_TOKEN_TTL  | Verification token lifetime in minutes       | 5                                   |
 
 ## User Types and Permissions
 
@@ -363,20 +365,6 @@ This command will:
    - User account is permanently deleted from the system
    - All associated data is removed
 
-## Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-go test ./...
-
-# Run with coverage
-go test -cover ./...
-
-# Run specific package tests
-go test ./internal/services/auth
-```
 
 ### API Testing with Postman
 
