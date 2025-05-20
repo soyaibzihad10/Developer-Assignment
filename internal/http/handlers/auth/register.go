@@ -38,44 +38,44 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := &models.User{
-        Email:        req.Email,
-        Username:     req.Username,
-        PasswordHash: string(hashedPassword),
-    }
+		Email:        req.Email,
+		Username:     req.Username,
+		PasswordHash: string(hashedPassword),
+	}
 
-    // Call CreateUser to insert into DB and assign role
-    err = database.CreateUser(database.DB, user)
-    if err != nil {
-        if strings.Contains(err.Error(), "duplicate key value") {
-            http.Error(w, "Email or username already exists", http.StatusConflict)
-            return
-        }
-        log.Printf("Error creating user: %v", err)
-        http.Error(w, "Could not create user", http.StatusInternalServerError)
-        return
-    }
+	// Call CreateUser to insert into DB and assign role
+	err = database.CreateUser(database.DB, user)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value") {
+			http.Error(w, "Email or username already exists", http.StatusConflict)
+			return
+		}
+		log.Printf("Error creating user: %v", err)
+		http.Error(w, "Could not create user", http.StatusInternalServerError)
+		return
+	}
 
-    // Send verification email
-    err = email.SendVerificationEmail(user.Email, user.VerificationToken)
-    if err != nil {
-        log.Printf("Warning: Could not send verification email: %v", err)
-        // Don't return here, still send success response to client
-    }
+	// Send verification email
+	err = email.SendVerificationEmail(user.Email, user.VerificationToken)
+	if err != nil {
+		log.Printf("Warning: Could not send verification email: %v", err)
+		// Don't return here, still send success response to client
+	}
 
-    // Set headers before writing response
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusCreated)
+	// Set headers before writing response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 
-    // Return success response
-    json.NewEncoder(w).Encode(map[string]interface{}{
-        "status":      "success",
-        "status_code": http.StatusCreated, // Changed to 201 for resource creation
-        "message":     "User registered successfully. Please check your email for verification.",
-        "user": map[string]interface{}{
-            "id":       user.ID,
-            "email":    user.Email,
-            "username": user.Username,
-            "active":   user.Active,
-        },
-    })
+	// Return success response
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":      "success",
+		"status_code": http.StatusCreated, // Changed to 201 for resource creation
+		"message":     "User registered successfully. Please check your email for verification.",
+		"user": map[string]interface{}{
+			"id":       user.ID,
+			"email":    user.Email,
+			"username": user.Username,
+			"active":   user.Active,
+		},
+	})
 }
