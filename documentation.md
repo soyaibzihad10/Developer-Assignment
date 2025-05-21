@@ -27,33 +27,15 @@ AffPilot Auth Service is a robust authentication and authorization service for m
 
 1. Clone the repository
 ```bash
-git clone https://github.com/soyaibzihad10/affpilot-auth-service.git
-cd affpilot-auth-service
+git clone https://github.com/soyaibzihad10/Developer-Assignment
+cd Developer-Assignment
+go mod tidy
 ```
 
 2. Configure environment variables
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
-```
-
-3. Run the application
-```bash
-go run ./cmd/main.go
-```
-
-4. Apply database migrations
-```bash
-# If you're using go-migrate or similar tool
-migrate -database "postgres://user:password@localhost:5432/affpilot_auth?sslmode=disable" -path migrations up
-```
-
-### Docker Setup
-
-1. Clone the repository
-```bash
-git clone https://github.com/soyaibzihad10/affpilot-auth-service.git
-cd affpilot-auth-service
 ```
 
 2. Start the application with Docker Compose

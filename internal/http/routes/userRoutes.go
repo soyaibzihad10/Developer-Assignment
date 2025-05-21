@@ -19,11 +19,11 @@ func RegisterUserRoutes(r *mux.Router) {
 	adminList := userRoutes.PathPrefix("").Subrouter()
 	adminList.Use(middleware.RequireAdmin)
 	adminList.HandleFunc("", users.ListUsersHandler).Methods("GET")
+	adminList.HandleFunc("/{user_id}", users.DeleteUserHandler).Methods("DELETE")
 
 	adminSelf := userRoutes.PathPrefix("").Subrouter()
 	adminSelf.Use(middleware.RequireAdminModeratorSelf)
 	adminSelf.HandleFunc("/{user_id}", users.GetUserHandler).Methods("GET")
-	adminSelf.HandleFunc("/{user_id}", users.DeleteUserHandler).Methods("DELETE")
 
 	self := userRoutes.PathPrefix("").Subrouter()
 	self.Use(middleware.RequireAdminOrSelf)

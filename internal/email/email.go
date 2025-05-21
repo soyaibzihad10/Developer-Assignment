@@ -5,16 +5,19 @@ import (
 	"log"
 	"net/smtp"
 	"os"
+
+	"github.com/soyaibzihad10/Developer-Assignment/internal/config"
 )
 
 // password reset related
 
-func SendEmail(toEmail string, subject string, body string) error {
-    from := os.Getenv("EMAIL_FROM")
-    username := os.Getenv("EMAIL_USERNAME")
-    password := os.Getenv("EMAIL_PASSWORD")
-    smtpHost := os.Getenv("EMAIL_HOST")
-    smtpPort := os.Getenv("EMAIL_PORT")
+// SendEmail sends a generic email using the provided configuration
+func SendEmail(cfg *config.Config, toEmail, subject, body string) error {
+    from := cfg.Email.From
+    username := cfg.Email.Username
+    password := cfg.Email.Password
+    smtpHost := cfg.Email.Host
+    smtpPort := fmt.Sprintf("%d", cfg.Email.Port)
 
     if from == "" || username == "" || password == "" || smtpHost == "" || smtpPort == "" {
         return fmt.Errorf("email configuration is missing")
@@ -33,7 +36,8 @@ func SendEmail(toEmail string, subject string, body string) error {
     return nil
 }
 
-func SendPasswordResetEmail(toEmail, resetLink string) error {
+// SendPasswordResetEmail sends a password reset email
+func SendPasswordResetEmail(cfg *config.Config, toEmail, resetLink string) error {
     subject := "Password Reset Request"
     body := fmt.Sprintf(`
         Hello,
@@ -49,12 +53,11 @@ func SendPasswordResetEmail(toEmail, resetLink string) error {
         Your App Team
     `, resetLink)
 
-    return SendEmail(toEmail, subject, body)
+    return SendEmail(cfg, toEmail, subject, body)
 }
 
-
 // varification related
-func SendVerificationEmail(toEmail, token string) error {
+func SendVerificationEmail(cfg *config.Config, toEmail, token string) error {
 	from := os.Getenv("EMAIL_FROM")
 	username := os.Getenv("EMAIL_USERNAME")
 	password := os.Getenv("EMAIL_PASSWORD")
@@ -65,7 +68,7 @@ func SendVerificationEmail(toEmail, token string) error {
 		return fmt.Errorf("email configuration is missing")
 	}
 
-	verificationLink := fmt.Sprintf("%s?token=%s", os.Getenv("EMAIL_VERIFICATION_URL"), token)
+	verificationLink := fmt.Sprintf("%s?token=%s", cfg.Email.VerificationURL, token)
 	message := []byte(fmt.Sprintf("Subject: Email Verification\n\nPlease verify your email by clicking the link: %s", verificationLink))
 
 	auth := smtp.PlainAuth("", username, password, smtpHost)

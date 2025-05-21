@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -22,6 +23,7 @@ type Config struct {
 type AppConfig struct {
 	Environment string
 	LogLevel    string
+	AppURL      string // Added for password reset and other URLs
 }
 
 // DatabaseConfig holds database connection information
@@ -87,6 +89,8 @@ func LoadConfig() (*Config, error) {
 	// Parse server port
 	serverPort, _ := strconv.Atoi(getEnv("SERVER_PORT", "8080"))
 
+	EMAIL_VERIFICATION_URL := fmt.Sprintf("%s/api/v1/auth/verify", os.Getenv("SERVER_DOMAIN"))
+
 	return &Config{
 		App: AppConfig{
 			Environment: getEnv("APP_ENV", "development"),
@@ -110,7 +114,7 @@ func LoadConfig() (*Config, error) {
 			Email:    getEnv("SYSTEM_ADMIN_EMAIL", "admin@example.com"),
 		},
 		Email: EmailConfig{
-			VerificationURL: getEnv("EMAIL_VERIFICATION_URL", "http://localhost:8080/api/v1/auth/verify"),
+			VerificationURL: EMAIL_VERIFICATION_URL,
 			From:            getEnv("EMAIL_FROM", "no-reply@example.com"),
 			Host:            getEnv("EMAIL_HOST", "smtp.example.com"),
 			Port:            emailPort,
