@@ -44,11 +44,13 @@ func RequestPasswordResetHandler(cfg *config.Config) http.HandlerFunc {
 		}
 
 		resetLink := fmt.Sprintf("%s/reset-password?token=%s", cfg.App.AppURL, resetToken)
-		err = email.SendPasswordResetEmail(cfg, user.Email, resetLink)
-		if err != nil {
-			http.Error(w, "Could not send reset email", http.StatusInternalServerError)
-			return
-		}
+
+		go func() {
+			err = email.SendPasswordResetEmail(cfg, user.Email, resetLink)
+			if err != nil {
+				http.Error(w, "Could not send reset email", http.StatusInternalServerError)
+			}
+		}()
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

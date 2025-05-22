@@ -22,11 +22,10 @@ func init() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	database.CreateSystemAdminIfNotExists(cnf.Admin)
-
 	if err := database.RunMigrations(); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
+	database.CreateSystemAdminIfNotExists(cnf.Admin)
 }
 
 func main() {
@@ -48,7 +47,6 @@ func main() {
 
 		router.ServeHTTP(w, r)
 	})
-
 
 	port := ":8080"
 	log.Println("Server is running on http://localhost" + port)

@@ -89,7 +89,7 @@ func LoadConfig() (*Config, error) {
 	// Parse server port
 	serverPort, _ := strconv.Atoi(getEnv("SERVER_PORT", "8080"))
 
-	EMAIL_VERIFICATION_URL := fmt.Sprintf("%s/api/v1/auth/verify", os.Getenv("SERVER_DOMAIN"))
+	EMAIL_VERIFICATION_URL := fmt.Sprintf("%s/api/v1/auth/verify", os.Getenv("BASE_URL"))
 
 	return &Config{
 		App: AppConfig{

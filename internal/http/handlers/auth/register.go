@@ -59,11 +59,12 @@ func RegisterHandler(cfg *config.Config) http.HandlerFunc {
 		}
 
 		// Send verification email
-		err = email.SendVerificationEmail(cfg, user.Email, user.VerificationToken)
-		if err != nil {
-			log.Printf("Warning: Could not send verification email: %v", err)
-			// Don't return here, still send success response to client
-		}
+		go func() {
+			err := email.SendVerificationEmail(cfg, user.Email, user.VerificationToken)
+			if err != nil {
+				log.Printf("Warning: Could not send verification email: %v", err)
+			}
+		}()
 
 		// Set headers before writing response
 		w.Header().Set("Content-Type", "application/json")

@@ -58,11 +58,12 @@ func ResendVerificationHandler(cfg *config.Config) http.HandlerFunc {
 		}
 
 		// Send verification email
-		err = email.SendVerificationEmail(cfg, user.Email, user.VerificationToken)
-		if err != nil {
-			http.Error(w, "Could not send verification email", http.StatusInternalServerError)
-			return
-		}
+		go func() {
+			err = email.SendVerificationEmail(cfg, user.Email, user.VerificationToken)
+			if err != nil {
+				http.Error(w, "Could not send verification email", http.StatusInternalServerError)
+			}
+		}()
 
 		// Successful response
 		w.Header().Set("Content-Type", "application/json")
