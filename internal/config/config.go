@@ -4,10 +4,28 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/joho/godotenv"
 )
+
+var (
+	cfg *Config
+	once     sync.Once
+)
+
+// GetConfig returns the singleton instance of Config
+func GetConfig() *Config {
+	once.Do(func() {
+		config, err := LoadConfig()
+		if err != nil {
+			panic(fmt.Sprintf("Failed to load config: %v", err))
+		}
+		cfg = config
+	})
+	return cfg
+}
 
 // Config holds all configuration for the application
 type Config struct {
@@ -86,15 +104,18 @@ func LoadConfig() (*Config, error) {
 	// Parse verification token TTL
 	verificationTTL, _ := strconv.Atoi(getEnv("VERIFICATION_TOKEN_TTL", "5"))
 
+	baseURL := getEnv("BASE_URL", "http://localhost:8080")
+
 	// Parse server port
 	serverPort, _ := strconv.Atoi(getEnv("SERVER_PORT", "8080"))
 
-	EMAIL_VERIFICATION_URL := fmt.Sprintf("%s/api/v1/auth/verify", os.Getenv("BASE_URL"))
+	EMAIL_VERIFICATION_URL := fmt.Sprintf("%s/api/v1/auth/verify", baseURL)
 
 	return &Config{
 		App: AppConfig{
 			Environment: getEnv("APP_ENV", "development"),
 			LogLevel:    getEnv("LOG_LEVEL", "debug"),
+			AppURL: 	baseURL,
 		},
 		Database: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),

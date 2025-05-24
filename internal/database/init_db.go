@@ -13,14 +13,15 @@ import (
 var DB *sql.DB
 
 // ConnDB initializes the database connection
-func ConnDB(db_env config.DatabaseConfig) error {
+func ConnDB() error {
+	cfg := config.GetConfig()
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		db_env.Host,
-		strconv.Itoa(db_env.Port),
-		db_env.User,
-		db_env.Password,
-		db_env.Name,
-		db_env.SSLmode,
+		cfg.Database.Host,
+		strconv.Itoa(cfg.Database.Port),
+		cfg.Database.User,
+		cfg.Database.Password,
+		cfg.Database.Name,
+		cfg.Database.SSLmode,
 	)
 
 	var err error

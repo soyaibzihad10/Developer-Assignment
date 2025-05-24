@@ -11,7 +11,8 @@ import (
 // password reset related
 
 // SendEmail sends a generic email using the provided configuration
-func SendEmail(cfg *config.Config, toEmail, subject, body string) error {
+func SendEmail(toEmail, subject, body string) error {
+	cfg := config.GetConfig()
 	from := cfg.Email.From
 	username := cfg.Email.Username
 	password := cfg.Email.Password
@@ -36,7 +37,7 @@ func SendEmail(cfg *config.Config, toEmail, subject, body string) error {
 }
 
 // SendPasswordResetEmail sends a password reset email
-func SendPasswordResetEmail(cfg *config.Config, toEmail, resetLink string) error {
+func SendPasswordResetEmail(toEmail, resetLink string) error {
 	subject := "Password Reset Request"
 	body := fmt.Sprintf(`
         Hello,
@@ -52,11 +53,12 @@ func SendPasswordResetEmail(cfg *config.Config, toEmail, resetLink string) error
         Your App Team
     `, resetLink)
 
-	return SendEmail(cfg, toEmail, subject, body)
+	return SendEmail(toEmail, subject, body)
 }
 
 // varification related
-func SendVerificationEmail(cfg *config.Config, toEmail, token string) error {
+func SendVerificationEmail(toEmail, token string) error {
+	cfg := config.GetConfig()
 	from := cfg.Email.From
 	username := cfg.Email.Username
 	password := cfg.Email.Password

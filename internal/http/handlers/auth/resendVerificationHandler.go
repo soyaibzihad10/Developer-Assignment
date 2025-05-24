@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/soyaibzihad10/Developer-Assignment/internal/config"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/database"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/email"
 )
@@ -15,7 +14,7 @@ type ResendVerificationRequest struct {
 }
 
 // ResendVerificationHandler creates a handler that uses the provided Config
-func ResendVerificationHandler(cfg *config.Config) http.HandlerFunc {
+func ResendVerificationHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req ResendVerificationRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -59,7 +58,7 @@ func ResendVerificationHandler(cfg *config.Config) http.HandlerFunc {
 
 		// Send verification email
 		go func() {
-			err = email.SendVerificationEmail(cfg, user.Email, user.VerificationToken)
+			err = email.SendVerificationEmail(user.Email, user.VerificationToken)
 			if err != nil {
 				http.Error(w, "Could not send verification email", http.StatusInternalServerError)
 			}

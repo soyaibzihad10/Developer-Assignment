@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/soyaibzihad10/Developer-Assignment/internal/config"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/database"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/email"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/models"
@@ -20,7 +19,7 @@ type RegisterRequest struct {
 }
 
 // RegisterHandler creates a handler that uses the provided Config
-func RegisterHandler(cfg *config.Config) http.HandlerFunc {
+func RegisterHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req RegisterRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -60,7 +59,7 @@ func RegisterHandler(cfg *config.Config) http.HandlerFunc {
 
 		// Send verification email
 		go func() {
-			err := email.SendVerificationEmail(cfg, user.Email, user.VerificationToken)
+			err := email.SendVerificationEmail(user.Email, user.VerificationToken)
 			if err != nil {
 				log.Printf("Warning: Could not send verification email: %v", err)
 			}

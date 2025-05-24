@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/soyaibzihad10/Developer-Assignment/internal/config"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateSystemAdminIfNotExists(db_env config.AdminConfig) {
+func CreateSystemAdminIfNotExists() {
 	username := strings.TrimSpace(os.Getenv("SYSTEM_ADMIN_USERNAME"))
 	password := os.Getenv("SYSTEM_ADMIN_PASSWORD")
 	email := strings.ToLower(strings.TrimSpace(os.Getenv("SYSTEM_ADMIN_EMAIL")))

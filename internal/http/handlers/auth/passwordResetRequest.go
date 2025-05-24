@@ -16,8 +16,9 @@ type PasswordResetRequest struct {
 }
 
 // RequestPasswordResetHandler creates a handler that uses the provided Config
-func RequestPasswordResetHandler(cfg *config.Config) http.HandlerFunc {
+func RequestPasswordResetHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		cfg := config.GetConfig()
 		var req PasswordResetRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -43,10 +44,10 @@ func RequestPasswordResetHandler(cfg *config.Config) http.HandlerFunc {
 			return
 		}
 
-		resetLink := fmt.Sprintf("%s/reset-password?token=%s", cfg.App.AppURL, resetToken)
+		resetLink := fmt.Sprintf("%s/api/v1/auth/password-reset?token=%s", cfg.App.AppURL, resetToken)
 
 		go func() {
-			err = email.SendPasswordResetEmail(cfg, user.Email, resetLink)
+			err = email.SendPasswordResetEmail(user.Email, resetLink)
 			if err != nil {
 				http.Error(w, "Could not send reset email", http.StatusInternalServerError)
 			}

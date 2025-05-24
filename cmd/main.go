@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -9,26 +10,21 @@ import (
 	"github.com/soyaibzihad10/Developer-Assignment/internal/http/routes"
 )
 
-var cnf *config.Config
-
 func init() {
-	var err error
-	cnf, err = config.LoadConfig()
-	if err != nil {
-		log.Println("Config func does not working well")
-	}
-
-	if err := database.ConnDB(cnf.Database); err != nil {
+	if err := database.ConnDB(); err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
 	if err := database.RunMigrations(); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
-	database.CreateSystemAdminIfNotExists(cnf.Admin)
+	database.CreateSystemAdminIfNotExists()
 }
 
 func main() {
+	// Get config singleton
+	cfg := config.GetConfig()
+
 	log.Println("Server initialized")
 	defer database.DB.Close()
 
@@ -48,7 +44,7 @@ func main() {
 		router.ServeHTTP(w, r)
 	})
 
-	port := ":8080"
-	log.Println("Server is running on http://localhost" + port)
+	port := fmt.Sprintf(":%d", cfg.Server.Port)
+	log.Printf("Server is running on http://localhost%s", port)
 	log.Fatal(http.ListenAndServe(port, corsHandler))
 }
