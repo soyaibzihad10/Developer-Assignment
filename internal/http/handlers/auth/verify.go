@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/soyaibzihad10/Developer-Assignment/internal/database"
+	"github.com/soyaibzihad10/Developer-Assignment/internal/http/utils"
 )
 
 func VerifyEmailHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,42 +21,19 @@ func VerifyEmailHandler(w http.ResponseWriter, r *http.Request) {
 	// Debug logging
 	log.Printf("Received verification request with token length: %d", len(token))
 
-	// Query to get user details first
-	var userID string
-	var email string
-	userQuery := `
-        SELECT id, email 
-        FROM users 
-        WHERE verification_token = $1 
-        AND token_expiry > NOW()
-        AND email_verified = false`
-
-	err := database.DB.QueryRow(userQuery, token).Scan(&userID, &email)
+	claims, err := utils.ValidateEmailVerificationToken(token)
 	if err != nil {
-		log.Printf("Error finding user with token: %v", err)
-		http.Error(w, "Invalid or expired token", http.StatusBadRequest)
+		log.Printf("Invalid verification token: %v", err)
+		http.Error(w, "Invalid or expired verification token", http.StatusBadRequest)
 		return
 	}
+
+	userID := claims.UserID
+	email := claims.Email
 
 	// Update user verification status
-	updateQuery := `
-        UPDATE users 
-        SET 
-            email_verified = true,
-            verification_token = NULL,
-            token_expiry = NULL
-        WHERE id = $1`
-
-	result, err := database.DB.Exec(updateQuery, userID)
-	if err != nil {
-		log.Printf("Error updating user verification status: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 0 {
-		log.Printf("No user updated for ID: %s", userID)
+	if err := database.UpdateEmailVerificationStatus(database.DB, userID); err != nil {
+		log.Printf("Error updating verification status: %v", err)
 		http.Error(w, "Verification failed", http.StatusBadRequest)
 		return
 	}

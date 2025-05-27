@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/soyaibzihad10/Developer-Assignment/internal/database"
+	"github.com/soyaibzihad10/Developer-Assignment/internal/http/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,15 +29,8 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Find user with reset token
-	var userID string
-	query := `
-		SELECT id 
-		FROM users 
-		WHERE reset_token = $1 
-		AND reset_token_expiry > NOW()`
-
-	err := database.DB.QueryRow(query, req.Token).Scan(&userID)
+	// Validate JWT token and get userID
+	userID, err := utils.ValidatePasswordResetToken(req.Token)
 	if err != nil {
 		log.Printf("Invalid reset token: %v", err)
 		http.Error(w, "Invalid or expired reset token", http.StatusBadRequest)
@@ -51,14 +45,11 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update password and clear reset token
+	// Update password
 	updateQuery := `
-		UPDATE users 
-		SET 
-			password_hash = $1,
-			reset_token = NULL,
-			reset_token_expiry = NULL
-		WHERE id = $2`
+        UPDATE users 
+        SET password_hash = $1
+        WHERE id = $2`
 
 	result, err := database.DB.Exec(updateQuery, string(hashedPassword), userID)
 	if err != nil {
@@ -69,12 +60,13 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
-		http.Error(w, "Password reset failed", http.StatusBadRequest)
+		http.Error(w, "Password reset failed - user not found", http.StatusBadRequest)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"status":  "success",
 		"message": "Password reset successfully",
 	})

@@ -37,13 +37,16 @@ func SendEmail(toEmail, subject, body string) error {
 }
 
 // SendPasswordResetEmail sends a password reset email
-func SendPasswordResetEmail(toEmail, resetLink string) error {
+func SendPasswordResetEmail(toEmail, resetLink string, resetToken string) error {
 	subject := "Password Reset Request"
 	body := fmt.Sprintf(`
         Hello,
         
         You have requested to reset your password. Please click the link below:
         %s
+
+		You can get your token from here:
+		%s
         
         This link will expire in 15 minutes.
         
@@ -51,7 +54,7 @@ func SendPasswordResetEmail(toEmail, resetLink string) error {
         
         Best regards,
         Your App Team
-    `, resetLink)
+    `, resetLink, resetToken)
 
 	return SendEmail(toEmail, subject, body)
 }

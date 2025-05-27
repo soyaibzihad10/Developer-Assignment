@@ -10,11 +10,11 @@ func RegisterAuthRoutes(r *mux.Router) {
 	authRoutes := r.PathPrefix("/api/v1/auth").Subrouter()
 
 	// Public routes
-	authRoutes.HandleFunc("/register", auth.RegisterHandler()).Methods("POST")
+	authRoutes.HandleFunc("/register", auth.RegisterHandler).Methods("POST")
 	authRoutes.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 	authRoutes.HandleFunc("/verify", auth.VerifyEmailHandler).Methods("GET")
-	authRoutes.HandleFunc("/resend-verification", auth.ResendVerificationHandler()).Methods("POST")
-	authRoutes.HandleFunc("/password-reset-request", auth.RequestPasswordResetHandler()).Methods("POST")
+	authRoutes.HandleFunc("/resend-verification", auth.ResendVerificationHandler).Methods("POST")
+	authRoutes.HandleFunc("/password-reset-request", auth.RequestPasswordResetHandler).Methods("POST")
 	authRoutes.HandleFunc("/password-reset", auth.ResetPasswordHandler).Methods("POST")
 
 	// Protected routes

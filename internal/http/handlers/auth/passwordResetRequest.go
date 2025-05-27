@@ -2,61 +2,75 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
-	"time"
+	"net/url"
+	"path"
 
 	"github.com/soyaibzihad10/Developer-Assignment/internal/config"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/database"
 	"github.com/soyaibzihad10/Developer-Assignment/internal/email"
+	"github.com/soyaibzihad10/Developer-Assignment/internal/http/utils"
 )
 
 type PasswordResetRequest struct {
 	Email string `json:"email"`
 }
 
-// RequestPasswordResetHandler creates a handler that uses the provided Config
-func RequestPasswordResetHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		cfg := config.GetConfig()
-		var req PasswordResetRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid request", http.StatusBadRequest)
-			return
-		}
+// RequestPasswordResetHandler handles password reset requests
+func RequestPasswordResetHandler(w http.ResponseWriter, r *http.Request) {
+	cfg := config.GetConfig()
+	var req PasswordResetRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
 
-		user, err := database.GetUserByEmail(database.DB, req.Email)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": "If your email is registered, you will receive a password reset link",
-			})
-			return
-		}
+	// Always set JSON content type
+	w.Header().Set("Content-Type", "application/json")
 
-		resetToken := database.GenerateRandomToken()
-		expiry := time.Now().Add(15 * time.Minute)
-
-		err = database.SavePasswordResetToken(database.DB, user.ID, resetToken, expiry)
-		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		resetLink := fmt.Sprintf("%s/api/v1/auth/password-reset?token=%s", cfg.App.AppURL, resetToken)
-
-		go func() {
-			err = email.SendPasswordResetEmail(user.Email, resetLink)
-			if err != nil {
-				http.Error(w, "Could not send reset email", http.StatusInternalServerError)
-			}
-		}()
-
-		w.Header().Set("Content-Type", "application/json")
+	user, err := database.GetUserByEmail(database.DB, req.Email)
+	if err != nil {
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":  "success",
 			"message": "If your email is registered, you will receive a password reset link",
 		})
+		return
 	}
+
+	// Generate JWT reset token
+	resetToken, err := utils.GeneratePasswordResetToken(user.ID, user.Email)
+	if err != nil {
+		log.Printf("Error generating reset token: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Construct reset URL
+	resetURL, err := url.Parse(cfg.App.AppURL)
+	if err != nil {
+		log.Printf("Invalid base URL: %v", err)
+		http.Error(w, "Server configuration error", http.StatusInternalServerError)
+		return
+	}
+
+	resetURL.Path = path.Join("auth", "reset-password")
+	q := resetURL.Query()
+	q.Set("token", resetToken)
+	resetURL.RawQuery = q.Encode()
+
+	// Send email in goroutine
+	go func() {
+		if err := email.SendPasswordResetEmail(user.Email, resetURL.String(), resetToken); err != nil {
+			log.Printf("Failed to send reset email to %s: %v", user.Email, err)
+		}
+	}()
+
+	// Return success response
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "If your email is registered, you will receive a password reset link",
+	})
 }
